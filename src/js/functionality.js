@@ -21,8 +21,8 @@ var months = ["มกราคม", "กุมภาพันธ์", "มีน
 // ตัวแปรสำหรับเก็บค่าวันที่ถูกคลิก เดือน/ปีที่ถูกเลือก
 var date = new Date();
 var currentDay = -1;
-var currentMonth = date.getMonth();
-var currentYear = date.getFullYear();
+var currentMonth = date.getMonth(); // (0-11)
+var currentYear = date.getFullYear(); // 2023
 
 // ตัวแปรสำหรับเก็บข้อมูลการนัดที่ถูกเพิ่ม/ลบ
 // Structure คือ 
@@ -66,7 +66,10 @@ function clearCalendar()
 {
     document.getElementById("week1").innerHTML = "";
     document.getElementById("week2").innerHTML = "";
-
+    document.getElementById("week3").innerHTML = "";
+    document.getElementById("week4").innerHTML = "";
+    document.getElementById("week5").innerHTML = "";
+    document.getElementById("week6").innerHTML = "";
     // สังเกตดูว่ามี element ไหนอีกที่เราต้องเคลียจากตาราง แล้วเติมให้ถูกต้อง
 
 }
@@ -74,17 +77,63 @@ function clearCalendar()
 // ฟังก์ชั่นสำหรับอัพเดทปฏิทิน คือ ล้างก่อน แล้วเติมข้อมูล
 function updateCalendar()
 {
-    //clearCalendar();
+    clearCalendar();
 
     // ใส่ค่าที่อัพเดทให้กับปฏิทิน
+    document.getElementById("currentMonth").innerHTML = months[currentMonth];
+    document.getElementById("currentYear").innerHTML = currentYear;
 
+    insertCalendar();
+}
+
+function insertCalendar()
+{
+    currentDay = 1;
+
+    let maxDate = 32 - new Date(currentYear, currentMonth, 32).getDate();
+
+    for(var r=1; r<7; r++)
+    {
+        var row = document.getElementById("week" + String(r));
+        dbg("week"+String(r));
+
+        for(var d=0; d<7; d++)
+        {
+            // dbg(r, d);
+            var dNow = new Date(currentYear, currentMonth, currentDay);
+            dbg(d, dNow.getDay());
+
+            if(dNow.getDay() == d && currentDay <= maxDate)
+            {
+                var node = document.createElement('td');
+                node.setAttribute("onclick", "showModal(" + String(currentDay) + ")");
+                node.className = "day";
+                node.innerHTML = `<div class="date">` + String(currentDay) + `</div>`
+                row.appendChild(node);
+                currentDay += 1;
+            }
+            else
+            {
+                var node = document.createElement('td');
+                node.className = "day other-month";
+                row.appendChild(node);
+            }
+        }
+    }
 }
 
 // ฟังก์ชั่นสำหรับเลื่อนเดือนไปเดือนก่อนหน้า
 function prevMonth()
 {
     // ดูตัวอย่างจากฟังก์ชั่น nextMonth() อย่าลืมเช็คกรณีที่เลขที่เดือนน้อยกว่า 0 ให้วนกลับไปที่ 11
+    currentMonth -= 1;
 
+    if(currentMonth < 0)
+    {
+        currentMonth = 11;
+    }
+
+    updateCalendar();
 }
 
 // ฟังก์ชั่นสำหรับเลื่อนเดือนไปเดือนถัดไป
@@ -92,7 +141,7 @@ function nextMonth()
 {
     // ตัวแปร currentMonth ควรมีค่าตั้งแต่ 0-11 (0 คือ มกราคม, 11 คือ ธันวาคม)
     // เพิ่มค่าตัวแปร currentMonth อีก 1 ถ้าเพิ่มแล้วเกิน 12 ให้วนกลับไป 0
-    currentMonth = (currentMonth + 1) % 12;
+    currentMonth = (currentMonth + 1) % 12; 
 
     updateCalendar();
 }
@@ -116,6 +165,10 @@ function prevYear()
 function nextYear()
 {
     // ดูตัวอย่างจากฟังก์ชั่น prevYear()
+
+    currentYear += 1;
+
+    updateCalendar();
 }
 
 // ฟังก์ชั่นสำหรับเซฟนัดสำหรับวันที่คลิก
@@ -133,6 +186,9 @@ function showModal(day)
     let modal = document.getElementById("detail-modal");
 
     modal.style.display = "block";
+
+    let h = document.getElementById("modal-h2");
+    h.innerHTML = String(day) + ' ' + months[currentMonth] + ' ' + String(currentYear);
 }
 
 // ฟังก์ชั่นสำหรับจัดการการกดปุ่มเพิ่มนัด
@@ -140,6 +196,21 @@ function addEvent()
 {
     // ใช้ document.getElementById ดึงค่า id=desc กับ id=time ออกมา และเพิ่มเข้าไปในฐานข้อมูล รวมถึงอัพเดทหน้า Modal ให้แสดงผลนัดที่เพิ่มเข้าไป
 
+    var desc = document.getElementById("desc").value;
+    var time = document.getElementById("time").value;
+    dbg(desc, time);
+
+    var modal_body = document.getElementById("modal-body");
+    modal_body.innerHTML = `
+    <textarea id="desc" class="modal-descriptions" placeholder="รายละเอียด">` + desc + `</textarea><br>
+    <input type="text" id="time" class="modal-times" placeholder="เวลา" value="` + time + `"> 
+    <span onclick="removeEvent()"><i class="fa-regular fa-calendar-xmark"></i></span><br>
+    ` + modal_body.innerHTML;
+}
+
+function removeEvent()
+{
+    dbg("remove event clicked");
 }
 
 // ฟังก์ชั่นเมื่อมีการกดปิด Modal

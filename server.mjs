@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 app.get('/css/:cssPath', (req, res) => {
     // ตั้งค่า Header ให้ถูกประเภท ดูได้จาก https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
     let options = {
-        
+        root: __dirname
     };
 
     res.sendFile('src/css/' + req.params.cssPath, options);
@@ -39,6 +39,12 @@ app.get('/css/:cssPath', (req, res) => {
 // เมื่อต้องการโหลดไฟล์ javascript
 app.get('/js/:jsPath', (req, res) => {
     // ดูตัวอย่างจาก ฟังก์ชั่นด้านบน
+
+    let options = {
+        root: __dirname
+    };
+
+    res.sendFile('src/js/' + req.params.jsPath, options);
 });
 
 // เมื่อมีการเรียกดูฐานข้อมูล
